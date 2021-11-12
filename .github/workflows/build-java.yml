@@ -6,6 +6,7 @@ on:
       JAVA_VERSION:
         required: true
         type: number
+        description: 'The Java version to use for compiling and testing'
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -20,11 +21,9 @@ jobs:
   build:
     name: Compile & Test Java ${{ inputs.JAVA_VERSION }}
     runs-on: ubuntu-latest
-    env:
-      CODE_ARTIFACT_REGION: us-east-1
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-out the repository used by the caller workflow
       - uses: actions/checkout@v2
 
       # Configure AWS CLI
@@ -33,7 +32,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.CODE_ARTIFACT_REGION }}
+          aws-region: us-east-1
 
       # Obtain token and saves it as an env variable
       - name: Get and Save AWS token
