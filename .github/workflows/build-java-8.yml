@@ -1,0 +1,85 @@
+name: Build Java
+
+on:
+  workflow_call:
+    inputs:
+      JAVA_VERSION:
+        required: true
+        type: number
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DOMAIN_OWNER:
+        required: true
+      AWS_DOMAIN:
+        required: true
+
+jobs:
+  build:
+    name: Compile & Test Java ${{ inputs.JAVA_VERSION }}
+    runs-on: ubuntu-latest
+    env:
+      CODE_ARTIFACT_REGION: us-east-1
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Configure AWS CLI
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.CODE_ARTIFACT_REGION }}
+
+      # Obtain token and saves it as an env variable
+      - name: Get and Save AWS token
+        run: echo "AWS_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain ${{ secrets.AWS_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --query authorizationToken --output text)" >> $GITHUB_ENV
+
+      # Caching Corretto JDK
+      - name: Cache Corretto JDK
+        id: cache-jdk
+        uses: actions/cache@v2
+        with:
+          path: ${{ runner.temp }}/jdk
+          key: ${{ runner.os }}-jdk
+          restore-keys: ${{ runner.os }}-jdk
+
+      # Downloads Amazon Corretto JDK if not cached
+      # This will always download the latest version. To use a specific version provide the corresponding link
+      - name: Download Corretto JDK
+        if: steps.cache-jdk.outputs.cache-hit != 'true'
+        run: |
+          mkdir $RUNNER_TEMP/jdk
+          download_URL="https://corretto.aws/downloads/latest/amazon-corretto-$JAVA_VERSION-x64-linux-jdk.tar.gz"
+          wget -O $RUNNER_TEMP/jdk/java_package.tar.gz $download_url
+
+      # Configure Java. This creates the settings.xml
+      - name: Set up Correto JDK ${{ inputs.JAVA_VERSION }}
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'jdkfile'
+          jdkfile: ${{ runner.temp }}/jdk/java_package.tar.gz
+          java-version: ${{ inputs.JAVA_VERSION }}
+          architecture: x64
+          # Maven settings.xml configuration used for deploy
+          server-id: adtomiclabs--repository.adtomiclabs
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      # Caching maven dependencies when there are no changes in pom.xml
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: mvn -B -T 1C -ntp -q test
+        env:
+          MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
