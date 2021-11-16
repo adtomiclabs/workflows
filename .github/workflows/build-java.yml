@@ -53,7 +53,7 @@ jobs:
         if: steps.cache-jdk.outputs.cache-hit != 'true'
         run: |
           mkdir $RUNNER_TEMP/jdk
-          download_URL="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
+          download_url="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
           wget -O $RUNNER_TEMP/jdk/java_package.tar.gz $download_url
 
       # Configure Java. This creates the settings.xml
