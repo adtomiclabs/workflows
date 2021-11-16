@@ -1,0 +1,46 @@
+name: Deploy Artifact
+
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      ENVIRONMENT:
+        required: true
+        description: 'The Elastic Beanstalk environment to use'
+      APP_NAME:
+        required: true
+        description: 'The Application name in Elastic Beanstalk'
+      VERSION:
+        required: true
+        description: 'The artifact version as shown in Elastic Beanstalk'
+      VERSION_DESCRIPTION:
+        required: false
+      ARTIFACT_NAME:
+        required: true
+        description: 'The name of the artifact'
+
+jobs:
+  deploy:
+    name: Deploy Artifact ${{ secrets.ARTIFACT_NAME }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # Deploy zip to elastic beanstalk
+      - name: Deploy ${{ secrets.VERSION }} in ${{ secrets.ENVIRONMENT }}
+        uses: einaregilsson/beanstalk-deploy@v17
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-west-1
+          application_name: ${{ secrets.APP_NAME }}
+          environment_name: ${{ secrets.ENVIRONMENT }}
+          version_label: ${{ secrets.VERSION }}
+          version_description: ${{ secrets.VERSION_DESCRIPTION }}
+          deployment_package: ${{ secrets.ARTIFACT_NAME }}
+          # Whether the action should wait for the deployment to be complete in Elastic Beanstalk
+          wait_for_deployment: false
+          # Will deploy a version already in Elastic Beanstalk if it exists, but if it doesn't exist it will create it from the deployment package
+          use_existing_version_if_available: true

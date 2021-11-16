@@ -1,2 +1,2 @@
 # workflows
-Repository with Github workflows shared accross the company
+Repository with GitHub workflows shared across the company
