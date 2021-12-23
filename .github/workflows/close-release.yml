@@ -1,0 +1,58 @@
+name: Close Release
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION:
+        required: true
+        type: string
+        description: 'The library version'
+      BASE_BRANCH:
+        required: true
+        type: string
+        description: 'The base branch to use for the PR'
+    secrets:
+      GIT_CONFIG_USER:
+        required: true
+      GIT_CONFIG_USER_EMAIL:
+        required: true
+
+jobs:
+  close-release:
+    name: Close Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Sets up the git user used to push the version change
+      - name: Configure Git user
+        run: |
+          git config user.email ${{ secrets.GIT_CONFIG_USER_EMAIL }}
+          git config user.name ${{ secrets.GIT_CONFIG_USER }}
+
+      # Create close-release branch
+      - name: Create Branch close-release/${{inputs.RELEASE_VERSION}}
+        run: |
+          git pull
+          git checkout -b close-release/${{inputs.RELEASE_VERSION}}
+
+      - name: Set next SNAPSHOT
+        run: |
+          mvn -B -T 1C -ntp versions:set -DnextSnapshot=true -DprocessAllModules=true -DgenerateBackupPoms=false
+          git add .
+          git commit -m "Set next snapshot version"
+          git push -u origin close-release/${{inputs.RELEASE_VERSION}}
+
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          head: close-release/${{inputs.RELEASE_VERSION}}
+          base: ${{inputs.BASE_BRANCH}}
+          title: Release version ${{inputs.RELEASE_VERSION}}
+          reviewers: ${{ github.actor }}
+          body: |
+            This PR was created in response to a manual trigger of the release workflow here:
+
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
