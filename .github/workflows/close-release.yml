@@ -50,7 +50,7 @@ jobs:
         with:
           head: close-release/${{inputs.RELEASE_VERSION}}
           base: ${{inputs.BASE_BRANCH}}
-          title: Release version ${{inputs.RELEASE_VERSION}}
+          title: Close Release ${{inputs.RELEASE_VERSION}}
           reviewers: ${{ github.actor }}
           body: |
             This PR was created in response to a manual trigger of the release workflow here:
