@@ -21,7 +21,6 @@ jobs:
   build:
     name: Compile & Test Java ${{ inputs.JAVA_VERSION }}
     runs-on: ubuntu-latest
-    if: !startsWith(github.event.pull_request.head.ref, 'close-release/')
     steps:
       # Checks-out the repository used by the caller workflow
       - uses: actions/checkout@v2

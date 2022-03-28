@@ -23,7 +23,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    if: !startsWith(github.event.pull_request.head.ref, 'close-release/')
     steps:
       - uses: actions/checkout@v2
         with:
