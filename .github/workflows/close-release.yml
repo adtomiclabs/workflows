@@ -83,7 +83,7 @@ jobs:
         run: |
           mvn -B -T 1C -ntp versions:set -DnextSnapshot=true -DprocessAllModules=true -DgenerateBackupPoms=false
           git add .
-          git commit -m "Set next snapshot version"
+          git commit -m "Set next snapshot version [skip ci]"
           git push -u origin close-release/${{inputs.RELEASE_VERSION}}
 
       - name: Create pull request
