@@ -63,7 +63,7 @@ jobs:
       # Downloads Amazon Corretto JDK 11 if not cached
       # This will always download the latest version. To use a specific version provide the corresponding link
       - name: Download Corretto JDK
-        if: ${{ inputs.JAVA_DISTRIBUTION == 'corretto' }} && steps.cache-jdk.outputs.cache-hit != 'true'
+        if: ${{ inputs.JAVA_DISTRIBUTION == 'corretto' && steps.cache-jdk.outputs.cache-hit != 'true' }}
         run: |
           mkdir $RUNNER_TEMP/jdk
           download_url="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
