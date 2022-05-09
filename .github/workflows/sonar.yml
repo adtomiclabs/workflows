@@ -59,15 +59,6 @@ jobs:
           path: ${{ runner.temp }}/jdk
           key: ${{ runner.os }}-jdk
           restore-keys: ${{ runner.os }}-jdk
-      
-      # Downloads Amazon Corretto JDK 11 if not cached
-      # This will always download the latest version. To use a specific version provide the corresponding link
-      - name: Download Corretto JDK
-        if: steps.cache-jdk.outputs.cache-hit != 'true'
-        run: |
-          mkdir $RUNNER_TEMP/jdk
-          download_url="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
-          wget -O $RUNNER_TEMP/jdk/java_package.tar.gz $download_url
           
       # Configure Java. This creates the settings.xml
       - name: Set up Correto JDK ${{ inputs.JAVA_VERSION }}
