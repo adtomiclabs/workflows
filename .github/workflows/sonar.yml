@@ -2,6 +2,17 @@ name: SONAR
 
 on:
   workflow_call:
+    inputs:
+      JAVA_VERSION:
+        type: number
+        required: false
+        default: 11
+        description: 'The Java version to use for compiling and testing. Defaults to 11'
+      USE_CORRETO_JDK:
+        type: boolean
+        required: false
+        default: true
+        description: 'Whether the workflow should use Amazon Correto JDK or not'
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -18,7 +29,6 @@ on:
       JACOCO_REPORT_PATH:
         required: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
     name: Build
@@ -42,6 +52,7 @@ jobs:
 
       # Caching Corretto JDK
       - name: Cache Corretto JDK
+        if: ${{ inputs.USE_CORRETO_JDK }} == true
         id: cache-jdk
         uses: actions/cache@v3
         with:
@@ -52,20 +63,33 @@ jobs:
       # Downloads Amazon Corretto JDK 11 if not cached
       # This will always download the latest version. To use a specific version provide the corresponding link
       - name: Download Corretto JDK
-        if: steps.cache-jdk.outputs.cache-hit != 'true'
+        if: ${{ inputs.USE_CORRETO_JDK }} == true && steps.cache-jdk.outputs.cache-hit != 'true'
         run: |
           mkdir $RUNNER_TEMP/jdk
-          download_url="https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.tar.gz"
+          download_url="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
           wget -O $RUNNER_TEMP/jdk/java_package.tar.gz $download_url
           
       # Configure Java. This creates the settings.xml
-      - name: Set up Correto JDK 11
+      - name: Set up Correto JDK ${{ inputs.JAVA_VERSION }}
+        if: ${{ inputs.USE_CORRETO_JDK }} == true
         uses: actions/setup-java@v3
         with:
           distribution: 'jdkfile'
           jdkfile: ${{ runner.temp }}/jdk/java_package.tar.gz
-          java-version: '11'
+          java-version: ${{ inputs.JAVA_VERSION }}
           architecture: x64
+          # Maven settings.xml configuration used for deploy
+          server-id: adtomiclabs--repository.adtomiclabs
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      # Configure Java. This creates the settings.xml
+      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
+        if: ${{ inputs.USE_CORRETO_JDK }} == false
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: ${{ inputs.JAVA_VERSION }}
           # Maven settings.xml configuration used for deploy
           server-id: adtomiclabs--repository.adtomiclabs
           server-username: MAVEN_USERNAME
