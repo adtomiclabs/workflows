@@ -52,7 +52,7 @@ jobs:
 
       # Caching Corretto JDK
       - name: Cache Corretto JDK
-        if: ${{ inputs.USE_CORRETO_JDK }}
+        if: ${{ inputs.USE_CORRETO_JDK == true }}
         id: cache-jdk
         uses: actions/cache@v3
         with:
@@ -63,7 +63,7 @@ jobs:
       # Downloads Amazon Corretto JDK 11 if not cached
       # This will always download the latest version. To use a specific version provide the corresponding link
       - name: Download Corretto JDK
-        if: ${{ inputs.USE_CORRETO_JDK }} && steps.cache-jdk.outputs.cache-hit != 'true'
+        if: ${{ inputs.USE_CORRETO_JDK == true }} && steps.cache-jdk.outputs.cache-hit != 'true'
         run: |
           mkdir $RUNNER_TEMP/jdk
           download_url="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
@@ -71,7 +71,7 @@ jobs:
           
       # Configure Java. This creates the settings.xml
       - name: Set up Correto JDK ${{ inputs.JAVA_VERSION }}
-        if: ${{ inputs.USE_CORRETO_JDK }}
+        if: ${{ inputs.USE_CORRETO_JDK == true }}
         uses: actions/setup-java@v3
         with:
           distribution: 'jdkfile'
@@ -85,7 +85,7 @@ jobs:
 
       # Configure Java. This creates the settings.xml
       - name: Set up JDK ${{ inputs.JAVA_VERSION }}
-        if: ${{ inputs.USE_CORRETO_JDK }} == 'false'
+        if: ${{ inputs.USE_CORRETO_JDK == false }}
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
