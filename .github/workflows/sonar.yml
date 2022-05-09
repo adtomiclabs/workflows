@@ -8,11 +8,11 @@ on:
         required: false
         default: 11
         description: 'The Java version to use for compiling and testing. Defaults to 11'
-      USE_CORRETO_JDK:
-        type: boolean
+      JAVA_DISTRIBUTION:
+        type: string
         required: false
-        default: true
-        description: 'Whether the workflow should use Amazon Correto JDK or not'
+        default: 'corretto'
+        description: 'The Java distribution to use. Defaults to Corretto'
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -52,7 +52,7 @@ jobs:
 
       # Caching Corretto JDK
       - name: Cache Corretto JDK
-        if: ${{ inputs.USE_CORRETO_JDK == true }}
+        if: ${{ inputs.JAVA_DISTRIBUTION == 'corretto' }}
         id: cache-jdk
         uses: actions/cache@v3
         with:
@@ -63,7 +63,7 @@ jobs:
       # Downloads Amazon Corretto JDK 11 if not cached
       # This will always download the latest version. To use a specific version provide the corresponding link
       - name: Download Corretto JDK
-        if: ${{ inputs.USE_CORRETO_JDK == true }} && steps.cache-jdk.outputs.cache-hit != 'true'
+        if: ${{ inputs.JAVA_DISTRIBUTION == 'corretto' }} && steps.cache-jdk.outputs.cache-hit != 'true'
         run: |
           mkdir $RUNNER_TEMP/jdk
           download_url="https://corretto.aws/downloads/latest/amazon-corretto-${{ inputs.JAVA_VERSION }}-x64-linux-jdk.tar.gz"
@@ -71,7 +71,7 @@ jobs:
           
       # Configure Java. This creates the settings.xml
       - name: Set up Correto JDK ${{ inputs.JAVA_VERSION }}
-        if: ${{ inputs.USE_CORRETO_JDK == true }}
+        if: ${{ inputs.JAVA_DISTRIBUTION == 'corretto' }}
         uses: actions/setup-java@v3
         with:
           distribution: 'jdkfile'
@@ -85,10 +85,10 @@ jobs:
 
       # Configure Java. This creates the settings.xml
       - name: Set up JDK ${{ inputs.JAVA_VERSION }}
-        if: ${{ inputs.USE_CORRETO_JDK == false }}
+        if: ${{ inputs.JAVA_DISTRIBUTION != 'corretto' }}
         uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
+          distribution: ${{ inputs.JAVA_DISTRIBUTION }}
           java-version: ${{ inputs.JAVA_VERSION }}
           # Maven settings.xml configuration used for deploy
           server-id: adtomiclabs--repository.adtomiclabs
