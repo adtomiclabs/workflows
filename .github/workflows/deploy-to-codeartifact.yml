@@ -7,6 +7,11 @@ on:
         required: true
         type: string
         description: 'The library version'
+      RELEASE_BRANCH:
+        required: false
+        type: string
+        description: 'The branch to use for the release'
+        default: 'develop'
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -68,7 +73,7 @@ jobs:
           git add .
           git commit -m "SCM - set version ${{ inputs.RELEASE_VERSION }}"
           git tag -a ${{ inputs.RELEASE_VERSION }} -m "Create release version tag"
-          git push origin develop --tags
+          git push origin ${{ inputs.RELEASE_BRANCH }} --tags
 
       - name: Deploy to CodeArtifact
         run: |
