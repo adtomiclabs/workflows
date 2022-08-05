@@ -67,6 +67,9 @@ jobs:
       - name: Update Release version to ${{ inputs.RELEASE_VERSION }}
         run: |
           mvn -B -ntp versions:set -DnewVersion=${{ inputs.RELEASE_VERSION }} -DprocessAllModules=true -DgenerateBackupPoms=false
+        env:
+          MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
 
       - name: Push version change and tags
         run: |
