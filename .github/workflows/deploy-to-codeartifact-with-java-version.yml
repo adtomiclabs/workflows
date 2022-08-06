@@ -1,0 +1,92 @@
+name: Deploy library to CodeArtifact
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION:
+        required: true
+        type: string
+        description: 'The library version'
+      RELEASE_BRANCH:
+        required: false
+        type: string
+        description: 'The branch to use for the release'
+        default: 'develop'
+      JAVA_VERSION:
+        required: true
+        type: number
+        description: 'The Java version to use for compiling and testing'
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DOMAIN_OWNER:
+        required: true
+      AWS_DOMAIN:
+        required: true
+      GIT_CONFIG_USER:
+        required: true
+      GIT_CONFIG_USER_EMAIL:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy library
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Configure AWS CLI
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Obtain token and saves it as an env variable
+      - name: Get and Save AWS token
+        run: echo "AWS_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain ${{ secrets.AWS_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --query authorizationToken --output text)" >> $GITHUB_ENV
+
+      # Configure Java. This creates the settings.xml
+      - name: Set up Correto JDK ${{ inputs.JAVA_VERSION }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'jdkfile'
+          jdkfile: ${{ runner.temp }}/jdk/java_package.tar.gz
+          java-version: ${{ inputs.JAVA_VERSION }}
+          architecture: x64
+          # Maven settings.xml configuration used for deploy
+          server-id: adtomiclabs--repository.adtomiclabs
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      # Sets up the git user used to push the version change
+      - name: Configure Git user
+        run: |
+          git config user.email ${{ secrets.GIT_CONFIG_USER_EMAIL }}
+          git config user.name ${{ secrets.GIT_CONFIG_USER }}
+
+      # Prepares the release and tags
+      - name: Update Release version to ${{ inputs.RELEASE_VERSION }}
+        run: |
+          mvn -B -ntp versions:set -DnewVersion=${{ inputs.RELEASE_VERSION }} -DprocessAllModules=true -DgenerateBackupPoms=false
+        env:
+          MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
+
+      - name: Push version change and tags
+        run: |
+          git add .
+          git commit -m "SCM - set version ${{ inputs.RELEASE_VERSION }}"
+          git tag -a ${{ inputs.RELEASE_VERSION }} -m "Create release version tag"
+          git push origin ${{ inputs.RELEASE_BRANCH }} --tags
+
+      - name: Deploy to CodeArtifact
+        run: |
+          mvn -B -T 1C -ntp clean deploy -Dmaven.test.skip=true
+        env:
+          MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
