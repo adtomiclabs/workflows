@@ -85,6 +85,9 @@ jobs:
           git add .
           git commit -m "Set next snapshot version [skip ci]"
           git push -u origin close-release/${{inputs.RELEASE_VERSION}}
+        env:
+          MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
 
       - name: Create pull request
         uses: thomaseizinger/create-pull-request@1.0.0
