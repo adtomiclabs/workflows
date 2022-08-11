@@ -16,10 +16,6 @@ on:
         required: true
       AWS_DOMAIN:
         required: true
-      GIT_CONFIG_USER:
-        required: true
-      GIT_CONFIG_USER_EMAIL:
-        required: true
 
 jobs:
   build:
