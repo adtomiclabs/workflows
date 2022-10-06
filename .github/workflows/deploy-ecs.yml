@@ -5,30 +5,38 @@ on:
     inputs:
       JAVA_VERSION:
         required: false
+        type: string
         description: 'The Java version to use for compiling'
         default: '17'
       PROFILE:
         required: false
+        type: string
         description: 'The profile to use for deploying the application'
         default: 'beta'
       DEVELOPMENT_VERSION:
         required: true
+        type: string
         description: 'The version or tag to identify the image'
       AWS_ECS_CLUSTER_NAME:
         required: false
+        type: string
         description: 'The name of the cluster where the services and tasks are defined'
         default: 'Beta'
       AWS_ECR_REPOSITORY:
         required: true
+        type: string
         description: 'The AWS ECR repository name from where the image is downloaded'
       AWS_TASK_DEFINITION_NAME:
         required: true
+        type: string
         description: 'The name of the task definition to use for the deployment'
       AWS_ECS_CONTAINER_NAME:
         required: true
+        type: string
         description: 'The name of the container to which the image is going to be deployed'
       AWS_ECS_SERVICE_NAME:
         required: true
+        type: string
         description: 'The name of the service to which the task is going to be deployed'
     secrets:
       AWS_ACCESS_KEY_ID:
