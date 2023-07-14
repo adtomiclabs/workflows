@@ -1,0 +1,42 @@
+name: Update Readme
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION:
+        required: true
+        type: string
+        description: "The version to use for the release"
+    secrets:
+      GIT_CONFIG_TOKEN:
+        required: true
+      GIT_CONFIG_USER:
+        required: true
+      GIT_CONFIG_USER_EMAIL:
+        required: true
+
+jobs:
+  release:
+    name: Prepare readme
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_CONFIG_TOKEN }}
+
+      # Sets up the git user that used to push the version change
+      - name: Configure Git user
+        run: |
+          git config user.email ${{ secrets.GIT_CONFIG_USER_EMAIL }}
+          git config user.name ${{ secrets.GIT_CONFIG_USER }}
+
+      - name: Update readme with versions
+        run: |
+          git fetch --prune --unshallow
+          git checkout main
+          tail -n +2 README.md > README.tmp && mv README.tmp README.md
+          echo "Latest version: $(git describe --tags --abbrev=0) - Ongoing version: ${{ inputs.RELEASE_VERSION }}" | cat - README.md > README.tmp && mv README.tmp README.md
+          git add .
+          git commit -m "SCM - Update readme with versions"
+          git pull
+          git push origin main
