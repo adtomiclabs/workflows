@@ -79,14 +79,14 @@ jobs:
         run: echo "AWS_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain ${{ secrets.AWS_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --query authorizationToken --output text)" >> $GITHUB_ENV
 
       # Prepares the release
-      - name: Update version
+      - name: Update to version ${{ inputs.RELEASE_VERSION }}
         run: |
           mvn -B -T 1C -ntp versions:set -DnewVersion=${{ inputs.RELEASE_VERSION }} -DprocessAllModules=true -DgenerateBackupPoms=false
         env:
           MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
           MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
 
-      - name: Push version change
+      - name: Push version change ${{ inputs.RELEASE_VERSION }}
         run: |
           git add .
           git commit -m "SCM - set version ${{ inputs.RELEASE_VERSION }}"
