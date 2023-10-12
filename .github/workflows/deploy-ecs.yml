@@ -148,7 +148,7 @@ jobs:
         run: echo "AWS_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain ${{ secrets.AWS_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --query authorizationToken --output text)" >> $GITHUB_ENV
 
       # Builds the image
-      - name: Build Docker image
+      - name: Build Docker image ${{ inputs.DEVELOPMENT_VERSION }}
         id: build-image
         run: |
           mvn -B -U -T 1C -ntp install jib:build -Djib.to.image=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }} -Djib.to.tags=${{ env.DEVELOPMENT_VERSION }} -Dmaven.test.skip=true

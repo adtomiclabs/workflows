@@ -99,7 +99,7 @@ jobs:
         with:
           head: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
           base: main
-          title: Release version ${{ secrets.RELEASE_VERSION }}
+          title: Release version ${{ inputs.RELEASE_VERSION }}
           reviewers: ${{ github.actor }}
           body: |
             This PR was created in response to a manual trigger of the release workflow here:
