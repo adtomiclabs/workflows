@@ -17,12 +17,10 @@ on:
         type: number
         description: 'The Java version to use for compiling and testing'
       SNAPSHOT_RELEASE:
-        type: choice
+        required: false
         description: 'Whether the deploy is a snapshot or not'
         default: 'false'
-        options:
-          - true
-          - false
+
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
