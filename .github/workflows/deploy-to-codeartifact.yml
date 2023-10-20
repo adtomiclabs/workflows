@@ -18,6 +18,7 @@ on:
         description: 'The Java version to use for compiling and testing'
       SNAPSHOT_RELEASE:
         required: false
+        type: string
         description: 'Whether the deploy is a snapshot or not'
         default: 'false'
 
