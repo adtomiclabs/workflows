@@ -12,6 +12,17 @@ on:
         type: string
         description: 'The branch to use for the release'
         default: 'develop'
+      JAVA_VERSION:
+        required: true
+        type: number
+        description: 'The Java version to use for compiling and testing'
+      SNAPSHOT_RELEASE:
+        type: choice
+        description: 'Whether the deploy is a snapshot or not'
+        default: 'false'
+        options:
+          - true
+          - false
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -47,11 +58,11 @@ jobs:
         run: echo "AWS_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain ${{ secrets.AWS_DOMAIN }} --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} --query authorizationToken --output text)" >> $GITHUB_ENV
 
       # Configure Java. This creates the settings.xml
-      - name: Set up JDK 8
+      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '8'
+          java-version: ${{ inputs.JAVA_VERSION }}
           # Maven settings.xml configuration used for deploy
           server-id: adtomiclabs--repository.adtomiclabs
           server-username: MAVEN_USERNAME
@@ -72,6 +83,7 @@ jobs:
           MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
 
       - name: Push version change and tags
+        if: inputs.SNAPSHOT_RELEASE == 'false'
         run: |
           git add .
           git commit -m "SCM - set version ${{ inputs.RELEASE_VERSION }}"
