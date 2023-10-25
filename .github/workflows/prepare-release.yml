@@ -3,6 +3,11 @@ name: Prepare Release
 on:
   workflow_call:
     inputs:
+      JAVA_VERSION:
+        required: false
+        type: string
+        description: 'The Java version to use for compiling'
+        default: '17'
       RELEASE_VERSION:
         required: true
         type: string
@@ -48,11 +53,11 @@ jobs:
           git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       # Configure Java. This creates the settings.xml
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
           distribution: 'adopt'
-          java-version: '17'
+          java-version: ${{ inputs.JAVA_VERSION }}
           # Maven settings.xml configuration used for deploy
           server-id: adtomiclabs--repository.adtomiclabs
           server-username: MAVEN_USERNAME
