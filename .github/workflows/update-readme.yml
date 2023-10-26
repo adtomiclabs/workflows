@@ -37,6 +37,6 @@ jobs:
           tail -n +2 README.md > README.tmp && mv README.tmp README.md
           echo "Latest version: $(git describe --tags --abbrev=0) - Ongoing version: ${{ inputs.RELEASE_VERSION }}" | cat - README.md > README.tmp && mv README.tmp README.md
           git add .
-          git commit -m "SCM - Update readme with versions"
+          git commit -m "SCM - Update readme with versions [skip ci]"
           git pull
           git push origin main
