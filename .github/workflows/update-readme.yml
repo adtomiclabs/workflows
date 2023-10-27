@@ -12,6 +12,10 @@ on:
         default: 'false'
         type: string
         description: "If the update is because a deploy"
+      BRANCH:
+        type: string
+        required: false
+        description: 'Release or Fix branch'
     secrets:
       GIT_CONFIG_TOKEN:
         required: true
@@ -66,3 +70,9 @@ jobs:
           git commit -m "SCM - Update readme with versions [skip ci]"
           git pull
           git push origin main
+
+      - name: Delete Release branch
+        if: inputs.IS_DEPLOY == 'true'
+        run: |
+          git fetch --prune
+          git push origin -d ${{ inputs.BRANCH }}
