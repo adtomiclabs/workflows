@@ -36,22 +36,22 @@ jobs:
           git config user.name ${{ secrets.GIT_CONFIG_USER }}
 
       - name: Get Latest version
-        if: ${{ IS_DEPLOY }} == 'false'
+        if: inputs.IS_DEPLOY == 'false'
         run: |
           echo "LATEST_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Get Latest version
-        if: ${{ IS_DEPLOY }} == 'true'
+        if: inputs.IS_DEPLOY == 'true'
         run: |
           echo "LATEST_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
 
       - name: Get Ongoing version
-        if: ${{ IS_DEPLOY }} == 'true'
+        if: inputs.IS_DEPLOY == 'true'
         run: |
           echo "ONGOING_VERSION=$(git branch -r | grep release | tail -1 | sed 's/origin\/release\///' | xargs)" >> $GITHUB_ENV
 
       - name: Get Ongoing version
-        if: ${{ IS_DEPLOY }} == 'false'
+        if: inputs.IS_DEPLOY == 'false'
         run: |
           echo "ONGOING_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
 
