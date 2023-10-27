@@ -58,7 +58,7 @@ jobs:
 
       - name: Update readme with versions
         run: |
-          git fetch --prune --unshallow
+          git fetch --prune
           git checkout main
           tail -n +2 README.md > README.tmp && mv README.tmp README.md
           echo "Latest version: $LATEST_VERSION - Ongoing version: $ONGOING_VERSION" | cat - README.md > README.tmp && mv README.tmp README.md
