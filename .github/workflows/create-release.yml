@@ -1,0 +1,22 @@
+name: Create Release
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION:
+        required: true
+        type: string
+        description: 'The release version'
+
+jobs:
+  create-release:
+    name: Create Release ${{ inputs.RELEASE_VERSION }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ inputs.RELEASE_VERSION }}
+          generateReleaseNotes: true
+          commit: main

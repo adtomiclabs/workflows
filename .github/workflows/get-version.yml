@@ -1,0 +1,42 @@
+name: Get Version
+
+on:
+  workflow_call:
+    inputs:
+      BRANCH_NAME:
+        required: true
+        type: string
+        description: 'The branch name'
+      MERGED:
+        required: false
+        type: string
+        default: 'true'
+        description: 'Whether the event that triggers the workflow was a merge or not'
+    outputs:
+      release-version:
+        description: 'The release version'
+        value: ${{ jobs.version.outputs.release-version }}
+    secrets:
+      GIT_CONFIG_TOKEN:
+        required: true
+
+jobs:
+  version:
+    name: Get version
+    runs-on: ubuntu-latest
+    outputs:
+      release-version: ${{ steps.extract-release-version.outputs.version }}
+
+    # only merged pull requests from 'release/' or 'fix/' branches must trigger this job
+    if: inputs.MERGED == 'true' && (startsWith(inputs.BRANCH_NAME, 'release/') || startsWith(inputs.BRANCH_NAME, 'fix/'))
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GIT_CONFIG_TOKEN }}
+
+      - name: Extract version from branch name
+        run: |
+          VERSION=$(echo ${{ inputs.BRANCH_NAME }} | sed 's/release\///' | sed 's/fix\///')
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        id: extract-release-version
