@@ -35,6 +35,8 @@ on:
         required: true
       GIT_CONFIG_USER_EMAIL:
         required: true
+      GIT_CONFIG_TOKEN:
+        required: true
 
 jobs:
   deploy:
