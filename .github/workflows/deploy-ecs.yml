@@ -153,7 +153,7 @@ jobs:
       - name: Build Docker image ${{ inputs.DEVELOPMENT_VERSION }}
         id: build-image
         run: |
-          mvn -B -U -T 1C -ntp install jib:build -Djib.to.image=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }} -Djib.to.tags=${{ env.DEVELOPMENT_VERSION }} -Dmaven.test.skip=true
+          mvn -B -U -T 1C -ntp install jib:build -Djib.to.image=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DEVELOPMENT_VERSION }} -Dmaven.test.skip=true
         env:
           MAVEN_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
           MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
