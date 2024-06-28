@@ -6,8 +6,8 @@ on:
         NODE_VERSION:
           required: false
           type: string
-          description: 'The Java version to use for compiling'
-          default: '20'
+          description: 'The node version used in the SAM Application'
+          default: '18'
         ENVIRONMENT:
           required: true
           type: string
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node 20
+      - name: Setup Node ${{ inputs.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
