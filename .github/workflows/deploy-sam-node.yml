@@ -3,6 +3,11 @@ name: Deploy SAM with Node
 on:
     workflow_call:
       inputs:
+        NODE_VERSION:
+          required: false
+          type: string
+          description: 'The Java version to use for compiling'
+          default: '20'
         ENVIRONMENT:
           required: true
           type: string
@@ -28,7 +33,7 @@ jobs:
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ inputs.NODE_VERSION }}
 
       - uses: aws-actions/setup-sam@v2
 
