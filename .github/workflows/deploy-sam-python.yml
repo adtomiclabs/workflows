@@ -1,4 +1,4 @@
-name: Deploy SAM with Node
+name: Deploy SAM with Python
 
 on:
     workflow_call:
