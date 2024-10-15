@@ -44,7 +44,14 @@ jobs:
         with:
           file: samconfig.toml
           key: prod.deploy.parameters.s3_prefix
-          value: ${{ inputs.RELEASE_VERSION }}
+          value: prod/${{ github.repository }}/${{ inputs.RELEASE_VERSION }}
+      
+      - name: Update beta prefix parameter
+        uses: rahulp959/toml-editor@v1.0.1
+        with:
+          file: samconfig.toml
+          key: beta.deploy.parameters.s3_prefix
+          value: beta/${{ github.repository }}/${{ inputs.RELEASE_VERSION }}
           
       - name: Create Release Branch
         run: |
