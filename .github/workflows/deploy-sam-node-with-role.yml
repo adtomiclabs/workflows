@@ -1,0 +1,50 @@
+name: Deploy SAM with Node
+
+on:
+    workflow_call:
+      inputs:
+        NODE_VERSION:
+          required: false
+          type: string
+          description: 'The node version used in the SAM Application'
+          default: '18'
+        ENVIRONMENT:
+          required: true
+          type: string
+          description: 'The sam app environment defined in samconfig.toml'
+      secrets:
+        AWS_SAM_REGION:
+          required: true
+        AWS_DOMAIN_OWNER:
+          required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node ${{ inputs.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+
+      - uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_DOMAIN_OWNER}}:role/github-actions
+          role-session-name: githubactionssession
+          aws-region: ${{ secrets.AWS_SAM_REGION }}
+
+      - name: Build App
+        run: sam build --config-env ${{ inputs.ENVIRONMENT }}
+
+      - name: Deploy
+        run: sam deploy --config-env ${{ inputs.ENVIRONMENT }} --no-confirm-changeset --no-fail-on-empty-changeset
