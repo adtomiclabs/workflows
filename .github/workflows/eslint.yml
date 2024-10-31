@@ -1,0 +1,29 @@
+name: ESLint
+
+on:
+    workflow_call:
+      inputs:
+        NODE_VERSION:
+          required: false
+          type: string
+          description: 'The node version used in the SAM Application'
+          default: '18'
+
+jobs:
+    build:
+        name: Linter
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+        - name: Setup Node ${{ inputs.NODE_VERSION }}
+          uses: actions/setup-node@v4
+          with:
+            node-version: ${{ inputs.NODE_VERSION }}
+
+        - name: Install and Run ESLint
+          run: |
+            chmod +x ./scripts/linter.sh
+            ./scripts/linter.sh
