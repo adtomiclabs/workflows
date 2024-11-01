@@ -25,5 +25,26 @@ jobs:
 
         - name: Install and Run ESLint
           run: |
-            chmod +x ./scripts/linter.sh
-            ./scripts/linter.sh
+            exit_code=0
+            
+            # Find all directories within the "functions" folder that contain a package.json file
+            for dir in functions/*/; do
+                if [ -f "$dir/package.json" ]; then
+                    echo "Running ESLint in $dir"
+                    cd "$dir"
+                    
+                    npm install
+                    npx eslint -c ./.eslintrc index.js --max-warnings=0
+                    eslint_exit_code=$?
+
+                    # Check if ESLint exited with an error
+                    if [ $eslint_exit_code -ne 0 ]; then
+                        exit_code=$eslint_exit_code
+                    fi
+
+                    cd -
+                fi
+            done
+
+            echo "Linting script completed"
+            exit $exit_code
