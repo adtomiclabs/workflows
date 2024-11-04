@@ -27,8 +27,8 @@ jobs:
           run: |
             exit_code=0
             
-            # Find all directories within the "functions" folder that contain a package.json file
-            for dir in functions/*/; do
+            # Find all directories within the "functions" folder that contain a index.js file excluding the node_modules folder
+            for dir in `find . -type d -path "*/functions/*" -not -path "*/node_modules/*"`; do
                 if [ -f "$dir/package.json" ]; then
                     echo "Running ESLint in $dir"
                     cd "$dir"
