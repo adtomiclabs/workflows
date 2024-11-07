@@ -71,7 +71,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           head: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
           base: main
           title: Release version ${{ inputs.RELEASE_VERSION }}

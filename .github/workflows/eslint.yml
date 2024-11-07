@@ -1,0 +1,50 @@
+name: ESLint
+
+on:
+    workflow_call:
+      inputs:
+        NODE_VERSION:
+          required: false
+          type: string
+          description: 'The node version used in the SAM Application'
+          default: '18'
+
+jobs:
+    build:
+        name: Linter
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+        - name: Setup Node ${{ inputs.NODE_VERSION }}
+          uses: actions/setup-node@v4
+          with:
+            node-version: ${{ inputs.NODE_VERSION }}
+
+        - name: Install and Run ESLint
+          run: |
+            exit_code=0
+            
+            # Find all directories within the "functions" folder that contain a index.js file excluding the node_modules folder
+            for dir in `find . -type d -path "*/functions/*" -not -path "*/node_modules/*"`; do
+                if [ -f "$dir/package.json" ]; then
+                    echo "Running ESLint in $dir"
+                    cd "$dir"
+                    
+                    npm install
+                    npx eslint -c ./.eslintrc index.js --max-warnings=0
+                    eslint_exit_code=$?
+
+                    # Check if ESLint exited with an error
+                    if [ $eslint_exit_code -ne 0 ]; then
+                        exit_code=$eslint_exit_code
+                    fi
+
+                    cd -
+                fi
+            done
+
+            echo "Linting script completed"
+            exit $exit_code
