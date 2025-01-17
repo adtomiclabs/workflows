@@ -1,0 +1,74 @@
+name: Prepare Release
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION:
+        required: true
+        type: string
+        description: "The version to use for the release"
+      RELEASE_TYPE:
+        required: true
+        type: string
+        description: "The type of release, either release of fix"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DOMAIN_OWNER:
+        required: true
+      AWS_DOMAIN:
+        required: true
+      GIT_CONFIG_TOKEN:
+        required: true
+      GIT_CONFIG_USER:
+        required: true
+      GIT_CONFIG_USER_EMAIL:
+        required: true
+
+jobs:
+  release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GIT_CONFIG_TOKEN }}
+
+      # Sets up the git user that used to push the version change
+      - name: Configure Git user
+        run: |
+          git config user.email ${{ secrets.GIT_CONFIG_USER_EMAIL }}
+          git config user.name ${{ secrets.GIT_CONFIG_USER }}
+
+      # Create release branch
+      - name: Create Release Branch
+        run: |
+          git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
+
+      - name: Update readme with versions
+        run: |
+            git fetch --prune
+            git checkout main
+            sed -i '' '/^version = /c\
+            version = "${{ inputs.RELEASE_VERSION }}"
+            ' pyproject.toml
+            git add .
+            git commit -m "SCM - Update readme with versions [skip ci]"
+            git pull
+            git push origin main
+
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@1.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          head: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
+          base: main
+          title: Release version ${{ inputs.RELEASE_VERSION }}
+          reviewers: ${{ github.actor }}
+          body: |
+            This PR was created in response to a manual trigger of the release workflow here:
+
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.

@@ -1,0 +1,118 @@
+name: Deploy ECS with Python
+
+on:
+    workflow_call:
+      inputs:   
+        DEVELOPMENT_VERSION:
+            required: true
+            type: string
+            description: 'The version or tag to identify the image'
+        AWS_ECS_CLUSTER_NAME:
+            required: false
+            type: string
+            description: 'The name of the cluster where the services and tasks are defined'
+            default: 'Beta'
+        AWS_ECR_REPOSITORY:
+            required: true
+            type: string
+            description: 'The AWS ECR repository name from where the image is downloaded'
+        AWS_TASK_DEFINITION_NAME:
+            required: true
+            type: string
+            description: 'The name of the task definition to use for the deployment'
+        AWS_ECS_CONTAINER_NAME:
+            required: true
+            type: string
+            description: 'The name of the container to which the image is going to be deployed'
+        AWS_ECS_SERVICE_NAME:
+            required: true
+            type: string
+            description: 'The name of the service to which the task is going to be deployed'
+      secrets:
+        AWS_SAM_REGION:
+          required: true
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_DOMAIN_OWNER}}:role/github-actions
+          role-session-name: githubactionssession
+          aws-region: ${{ secrets.AWS_SAM_REGION }}
+
+      # Step 2: Log in to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 3: Build the Docker image
+      - name: Build Docker Image
+        run: |
+          IMAGE_URI=${{env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.DEVELOPMENT_VERSION }}
+          docker build -t $IMAGE_URI .
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.AWS_ECR_REPOSITORY }}
+          DEVELOPMENT_VERSION: ${{ inputs.DEVELOPMENT_VERSION }}
+
+      # Step 4: Push the Docker image to ECR
+      - name: Push Docker Image
+        run: |
+          IMAGE_URI=${{env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.DEVELOPMENT_VERSION }}
+          docker push $IMAGE_URI
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ inputs.AWS_ECR_REPOSITORY }}
+          DEVELOPMENT_VERSION: ${{ inputs.DEVELOPMENT_VERSION }}
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # Configure AWS CLI
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            role-to-assume: arn:aws:iam::${{secrets.AWS_DOMAIN_OWNER}}:role/github-actions
+            role-session-name: githubactionssession
+            aws-region: ${{ secrets.AWS_SAM_REGION }}
+
+      # Step 2: Log in to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Download the task definition file
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ inputs.AWS_TASK_DEFINITION_NAME }} --query taskDefinition > task-definition.json
+
+      # Set the new docker image in the task definition downloaded
+      - name: Set new docker image ID in the ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+            task-definition: task-definition.json
+            container-name: ${{ inputs.AWS_ECS_CONTAINER_NAME }}
+            image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DEVELOPMENT_VERSION }}
+        env:
+            ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+            ECR_REPOSITORY: ${{ inputs.AWS_ECR_REPOSITORY }}
+            DEVELOPMENT_VERSION: ${{ inputs.DEVELOPMENT_VERSION }}
+
+      # Deploy the task definition into the given service in the given cluster
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+            task-definition: ${{ steps.task-def.outputs.task-definition }}
+            service: ${{ inputs.AWS_ECS_SERVICE_NAME }}
+            cluster: ${{ inputs.AWS_ECS_CLUSTER_NAME }}
+            wait-for-service-stability: false
