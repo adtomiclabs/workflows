@@ -12,14 +12,6 @@ on:
         type: string
         description: "The type of release, either release of fix"
     secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
-      AWS_DOMAIN_OWNER:
-        required: true
-      AWS_DOMAIN:
-        required: true
       GIT_CONFIG_TOKEN:
         required: true
       GIT_CONFIG_USER:
