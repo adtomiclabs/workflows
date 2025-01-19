@@ -43,9 +43,10 @@ jobs:
         run: |
             git fetch --prune
             git checkout main
-            sed -i '' '/^version = /c\
-            version = "${{ inputs.RELEASE_VERSION }}"
-            ' pyproject.toml
+            tail -n +4 pyproject.toml > pyproject.tmp && mv pyproject.tmp pyproject.toml
+            echo "[project]" >> pyproject.toml 
+            echo "name = \"${{ github.repository }}\"" >> pyproject.toml
+            echo "version = \"${{ inputs.RELEASE_VERSION }}\"" >> pyproject.toml
             git add .
             git commit -m "SCM - Update readme with versions [skip ci]"
             git pull
