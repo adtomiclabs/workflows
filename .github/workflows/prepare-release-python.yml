@@ -46,7 +46,6 @@ jobs:
             echo "version = \"${{ inputs.RELEASE_VERSION }}\"" >> pyproject.toml
             git add .
             git commit -m "SCM - Update readme with versions [skip ci]"
-            git pull
             git push origin ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       - name: Create pull request
