@@ -34,6 +34,10 @@ on:
         AWS_DOMAIN_OWNER:
           required: true
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     name: Build Image
