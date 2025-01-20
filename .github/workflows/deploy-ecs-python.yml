@@ -31,6 +31,8 @@ on:
       secrets:
         AWS_ECR_REGION:
           required: true
+        AWS_DOMAIN_OWNER:
+          required: true
 
 jobs:
   build:
