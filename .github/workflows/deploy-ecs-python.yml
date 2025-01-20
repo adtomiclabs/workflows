@@ -29,7 +29,7 @@ on:
             type: string
             description: 'The name of the service to which the task is going to be deployed'
       secrets:
-        AWS_SAM_REGION:
+        AWS_ECR_REGION:
           required: true
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_DOMAIN_OWNER}}:role/github-actions
           role-session-name: githubactionssession
-          aws-region: ${{ secrets.AWS_SAM_REGION }}
+          aws-region: ${{ secrets.AWS_ECR_REGION }}
 
       # Step 2: Log in to Amazon ECR
       - name: Login to Amazon ECR
@@ -83,7 +83,7 @@ jobs:
         with:
             role-to-assume: arn:aws:iam::${{secrets.AWS_DOMAIN_OWNER}}:role/github-actions
             role-session-name: githubactionssession
-            aws-region: ${{ secrets.AWS_SAM_REGION }}
+            aws-region: ${{ secrets.AWS_ECR_REGION }}
 
       # Step 2: Log in to Amazon ECR
       - name: Login to Amazon ECR
