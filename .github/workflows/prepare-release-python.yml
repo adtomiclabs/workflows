@@ -37,8 +37,6 @@ jobs:
       # Create release branch
       - name: Create Release Branch
         run: |
-            git fetch --prune
-            git checkout main
             git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
             tail -n +4 pyproject.toml > pyproject.tmp && mv pyproject.tmp pyproject.toml
             echo "[project]" >> pyproject.toml 
@@ -46,7 +44,7 @@ jobs:
             echo "version = \"${{ inputs.RELEASE_VERSION }}\"" >> pyproject.toml
             git add .
             git commit -m "SCM - Update readme with versions [skip ci]"
-            git push origin ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
+            git push -u origin ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       - name: Create pull request
         uses: thomaseizinger/create-pull-request@1.4.0
