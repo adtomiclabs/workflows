@@ -37,7 +37,10 @@ jobs:
       # Create release branch
       - name: Create Release Branch
         run: |
-            git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
+          git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
+
+      - name: Change version in pyproject.toml
+        run: |
             tail -n +4 pyproject.toml > pyproject.tmp && mv pyproject.tmp pyproject.toml
             echo "[project]" >> pyproject.toml 
             echo "name = \"${{ github.repository }}\"" >> pyproject.toml
