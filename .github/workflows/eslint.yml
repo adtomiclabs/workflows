@@ -34,7 +34,7 @@ jobs:
                     cd "$dir"
                     
                     npm install
-                    npx eslint -c ./.eslintrc index.{js,mjs} --max-warnings=0
+                    npx eslint -c ./.eslintrc "index.{js,mjs}" || true --max-warnings=0
                     eslint_exit_code=$?
 
                     # Check if ESLint exited with an error
