@@ -28,6 +28,11 @@ on:
             required: true
             type: string
             description: 'The name of the service to which the task is going to be deployed'
+        ARCH:
+            description: "Arquitectura a construir"
+            required: false
+            default: "amd64"
+            type: string
       secrets:
         AWS_ECR_REGION:
           required: true
@@ -45,6 +50,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
   
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,7 +70,17 @@ jobs:
       - name: Build Docker Image
         run: |
           IMAGE_URI=${{env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.DEVELOPMENT_VERSION }}
-          docker build -t $IMAGE_URI .
+          PLAT=""
+
+          if [ "$ARCH" == "both" ]; then
+            PLAT="linux/amd64,linux/arm64"
+          elif [ "$ARCH" == "arm64" ]; then
+            PLAT="linux/arm64"
+          else
+            PLAT="linux/amd64"
+          fi
+
+          docker buildx build --platform $PLAT -t $ECR_URI .
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ inputs.AWS_ECR_REPOSITORY }}
