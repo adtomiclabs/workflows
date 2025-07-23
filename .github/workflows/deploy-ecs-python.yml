@@ -72,9 +72,9 @@ jobs:
           IMAGE_URI=${{env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.DEVELOPMENT_VERSION }}
           PLAT=""
 
-          if [ "$ARCH" == "both" ]; then
+          if [ $ARCH == "both" ]; then
             PLAT="linux/amd64,linux/arm64"
-          elif [ "$ARCH" == "arm64" ]; then
+          elif [ $ARCH == "arm64" ]; then
             PLAT="linux/arm64"
           else
             PLAT="linux/amd64"
