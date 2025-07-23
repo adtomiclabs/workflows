@@ -31,7 +31,6 @@ on:
         ARCH:
             description: "Arquitectura a construir"
             required: false
-            default: "amd64"
             type: string
       secrets:
         AWS_ECR_REGION:
