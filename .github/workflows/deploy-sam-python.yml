@@ -12,6 +12,11 @@ on:
           required: true
           type: string
           description: 'The sam app environment defined in samconfig.toml'
+        SOURCE_REF:
+          required: false
+          type: string
+          description: 'Git ref to checkout (tag/branch/sha). If empty, uses caller default.'
+          default: ''
       secrets:
         AWS_ACCESS_KEY_ID:
           required: true
@@ -28,7 +33,12 @@ jobs:
     outputs:
       env-name: ${{ steps.env-name.outputs.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (ref if provided)
+        uses: actions/checkout@v4
+        with:
+          # Si SOURCE_REF viene vacío, checkout usa el ref por defecto del caller (github.sha)
+          ref: ${{ inputs.SOURCE_REF != '' && inputs.SOURCE_REF || '' }}
+          fetch-depth: 0   # recomendado para tags/describe
 
       - name: SetUp Python ${{ inputs.PYTHON_VERSION }}
         uses: actions/setup-python@v5
