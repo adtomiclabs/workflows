@@ -30,7 +30,7 @@ jobs:
     # only merged pull requests from 'release/' or 'fix/' branches must trigger this job
     if: inputs.MERGED == 'true' && (startsWith(inputs.BRANCH_NAME, 'release/') || startsWith(inputs.BRANCH_NAME, 'fix/'))
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GIT_CONFIG_TOKEN }}
 

@@ -34,7 +34,7 @@ jobs:
       env-name: ${{ steps.env-name.outputs.environment }}
     steps:
       - name: Checkout (ref if provided)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Si SOURCE_REF viene vacío, checkout usa el ref por defecto del caller (github.sha)
           ref: ${{ inputs.SOURCE_REF != '' && inputs.SOURCE_REF || '' }}
@@ -49,7 +49,7 @@ jobs:
         uses: aws-actions/setup-sam@v2
   
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

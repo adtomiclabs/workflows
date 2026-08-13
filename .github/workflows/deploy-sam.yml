@@ -32,7 +32,7 @@ jobs:
     name: Build & Deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node ${{ inputs.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -47,7 +47,7 @@ jobs:
       - uses: aws-actions/setup-sam@v2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{secrets.AWS_DOMAIN_OWNER}}:role/github-actions
           role-session-name: githubactionssession

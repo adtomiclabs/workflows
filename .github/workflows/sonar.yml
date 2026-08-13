@@ -40,7 +40,7 @@ jobs:
 
       # Configure AWS CLI
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -54,7 +54,7 @@ jobs:
       - name: Cache Corretto JDK
         if: inputs.JAVA_DISTRIBUTION == 'corretto'
         id: cache-jdk
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ runner.temp }}/jdk
           key: ${{ runner.os }}-jdk
@@ -96,7 +96,7 @@ jobs:
           server-password: MAVEN_PASSWORD
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -104,7 +104,7 @@ jobs:
 
       # Caching maven dependencies when there are no changes in pom.xml
       - name: Cache Maven packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}

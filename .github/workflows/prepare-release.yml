@@ -56,7 +56,7 @@ jobs:
       - name: Set up JDK ${{ inputs.JAVA_VERSION }}
         uses: actions/setup-java@v5
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: ${{ inputs.JAVA_VERSION }}
           # Maven settings.xml configuration used for deploy
           server-id: adtomiclabs--repository.adtomiclabs
@@ -65,7 +65,7 @@ jobs:
 
       # Caching maven dependencies when there are no changes in pom.xml
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -73,7 +73,7 @@ jobs:
 
       # Configure AWS CLI
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
