@@ -36,10 +36,10 @@ jobs:
           git config user.name ${{ secrets.GIT_CONFIG_USER }}
           
       - name: Update version
-        uses: rahulp959/toml-editor@v1.0.1
+        uses: cssnr/toml-action@v2
         with:
           file: samconfig.toml
-          key: sam.application.version
+          path: $.sam.application.version
           value: ${{ inputs.RELEASE_VERSION }}
 
       - name: Update prod prefix parameter
@@ -67,11 +67,11 @@ jobs:
           git push -u origin ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       - name: Create pull request
-        uses: thomaseizinger/create-pull-request@1.4.0
+        uses: peter-evans/create-pull-request@v8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          head: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
+          branch: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
           base: main
           title: Release version ${{ inputs.RELEASE_VERSION }}
           reviewers: ${{ github.actor }}

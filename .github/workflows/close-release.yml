@@ -90,11 +90,11 @@ jobs:
           MAVEN_PASSWORD: ${{ env.AWS_AUTH_TOKEN }}
 
       - name: Create pull request
-        uses: thomaseizinger/create-pull-request@1.4.0
+        uses: peter-evans/create-pull-request@v8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          head: close-release/${{inputs.RELEASE_VERSION}}
+          branch: close-release/${{inputs.RELEASE_VERSION}}
           base: ${{inputs.BASE_BRANCH}}
           title: Close Release ${{inputs.RELEASE_VERSION}}
           reviewers: ${{ github.actor }}
