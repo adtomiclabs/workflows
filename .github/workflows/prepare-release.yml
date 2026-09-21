@@ -106,6 +106,7 @@ jobs:
           base: main
           title: Release version ${{ inputs.RELEASE_VERSION }}
           reviewers: ${{ github.actor }}
+          sign-commits: true
           body: |
             This PR was created in response to a manual trigger of the release workflow here:
 
