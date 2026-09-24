@@ -39,7 +39,7 @@ jobs:
         uses: rahulp959/toml-editor@v1.0.1
         with:
           file: samconfig.toml
-          path: sam.application.version
+          key: sam.application.version
           value: ${{ inputs.RELEASE_VERSION }}
 
       - name: Update prod prefix parameter
