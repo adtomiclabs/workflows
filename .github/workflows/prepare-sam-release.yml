@@ -55,10 +55,6 @@ jobs:
           file: samconfig.toml
           key: beta.deploy.parameters.s3_prefix
           value: beta/${{ env.PROJECT_NAME }}/${{ inputs.RELEASE_VERSION }}
-          
-      - name: Create Release Branch
-        run: |
-          git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
