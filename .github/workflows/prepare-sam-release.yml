@@ -36,10 +36,10 @@ jobs:
           git config user.name ${{ secrets.GIT_CONFIG_USER }}
           
       - name: Update version
-        uses: cssnr/toml-action@v2
+        uses: rahulp959/toml-editor@v1.0.1
         with:
           file: samconfig.toml
-          path: $.sam.application.version
+          path: sam.application.version
           value: ${{ inputs.RELEASE_VERSION }}
 
       - name: Update prod prefix parameter
