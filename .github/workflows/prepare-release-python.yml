@@ -45,9 +45,6 @@ jobs:
             echo "[project]" >> pyproject.toml 
             echo "name = \"${{ github.repository }}\"" >> pyproject.toml
             echo "version = \"${{ inputs.RELEASE_VERSION }}\"" >> pyproject.toml
-            git add .
-            git commit -m "SCM - Update readme with versions [skip ci]"
-            git push origin HEAD:refs/heads/${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
@@ -56,8 +53,10 @@ jobs:
         with:
           branch: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
           base: main
+          commit-message: "SCM - set version ${{ inputs.RELEASE_VERSION }}"
           title: Release version ${{ inputs.RELEASE_VERSION }}
           reviewers: ${{ github.actor }}
+          sign-commits: true
           body: |
             This PR was created in response to a manual trigger of the release workflow here:
 
