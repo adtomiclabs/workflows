@@ -1,0 +1,127 @@
+name: Deploy npm library to CodeArtifact
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_VERSION:
+        required: true
+        type: string
+        description: 'The library version (semver)'
+      RELEASE_BRANCH:
+        required: false
+        type: string
+        description: 'The branch to use for the release'
+        default: 'main'
+      NODE_VERSION:
+        required: false
+        type: number
+        description: 'The Node version to use for building and publishing'
+        default: 24
+      PACKAGE_SCOPE:
+        required: false
+        type: string
+        description: 'The npm scope of the package, without the @'
+        default: 'adtomiclabs'
+      CODEARTIFACT_REPOSITORY:
+        required: false
+        type: string
+        description: 'The CodeArtifact repository the package is published to'
+        default: 'repository.adtomiclabs'
+      BUILD_COMMAND:
+        required: false
+        type: string
+        description: 'Optional command that builds the package before it is published (for example "npm run build")'
+        default: ''
+      SNAPSHOT_RELEASE:
+        required: false
+        type: string
+        description: 'Whether the deploy is a snapshot or not'
+        default: 'false'
+
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DOMAIN_OWNER:
+        required: true
+      AWS_DOMAIN:
+        required: true
+      GIT_CONFIG_USER:
+        required: true
+      GIT_CONFIG_USER_EMAIL:
+        required: true
+      GIT_CONFIG_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy library
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.RELEASE_BRANCH }}
+          token: ${{ secrets.GIT_CONFIG_TOKEN }}
+
+      # Snapshots are published as a semver prerelease under the "snapshot" dist-tag, so they never become "latest"
+      - name: Resolve the version to publish
+        run: |
+          VERSION="${{ inputs.RELEASE_VERSION }}"
+          if [ "${{ inputs.SNAPSHOT_RELEASE }}" = "true" ] && [[ "$VERSION" != *-* ]]; then
+            VERSION="${VERSION}-snapshot.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "PUBLISH_VERSION=$VERSION" >> $GITHUB_ENV
+          if [ "${{ inputs.SNAPSHOT_RELEASE }}" = "true" ]; then echo "PUBLISH_TAG=snapshot" >> $GITHUB_ENV; else echo "PUBLISH_TAG=latest" >> $GITHUB_ENV; fi
+
+      # Configure AWS CLI
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Node ${{ inputs.NODE_VERSION }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+
+      # Writes the CodeArtifact registry and a temporary token for the package scope into ~/.npmrc
+      - name: Log in to CodeArtifact
+        run: |
+          aws codeartifact login --tool npm \
+            --domain ${{ secrets.AWS_DOMAIN }} \
+            --domain-owner ${{ secrets.AWS_DOMAIN_OWNER }} \
+            --repository ${{ inputs.CODEARTIFACT_REPOSITORY }} \
+            --namespace ${{ inputs.PACKAGE_SCOPE }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        if: inputs.BUILD_COMMAND != ''
+        run: ${{ inputs.BUILD_COMMAND }}
+
+      - name: Update Release version
+        run: npm version "$PUBLISH_VERSION" --no-git-tag-version --allow-same-version
+
+      # Publishes first, so a failed publish never leaves a version tag behind
+      - name: Deploy to CodeArtifact
+        run: npm publish --tag "$PUBLISH_TAG"
+
+      # Sets up the git user used to push the version change
+      - name: Configure Git user
+        if: inputs.SNAPSHOT_RELEASE == 'false'
+        run: |
+          git config user.email ${{ secrets.GIT_CONFIG_USER_EMAIL }}
+          git config user.name ${{ secrets.GIT_CONFIG_USER }}
+
+      - name: Push version change and tags
+        if: inputs.SNAPSHOT_RELEASE == 'false'
+        run: |
+          git add package.json package-lock.json
+          git commit -m "SCM - set version ${{ inputs.RELEASE_VERSION }}"
+          git tag -a ${{ inputs.RELEASE_VERSION }} -m "Create release version tag"
+          git push origin ${{ inputs.RELEASE_BRANCH }} --tags
