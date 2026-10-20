@@ -26,7 +26,7 @@ on:
         required: false
         type: string
         description: 'The CodeArtifact repository the package is published to'
-        default: 'repository.adtomiclabs'
+        default: 'npm_repo'
       BUILD_COMMAND:
         required: false
         type: string
