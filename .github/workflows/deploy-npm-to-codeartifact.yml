@@ -39,10 +39,6 @@ on:
         default: 'false'
 
     secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
       AWS_DOMAIN_OWNER:
         required: true
       AWS_DOMAIN:
@@ -53,6 +49,12 @@ on:
         required: true
       GIT_CONFIG_TOKEN:
         required: true
+
+# Se autentica contra AWS asumiendo el rol `github-actions` por OIDC (sin claves guardadas). El workflow que lo llama tiene que dar
+# `permissions: id-token: write` al job que lo usa.
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
@@ -79,8 +81,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_DOMAIN_OWNER }}:role/github-actions
+          role-session-name: githubactionssession
           aws-region: us-east-1
 
       - name: Set up Node ${{ inputs.NODE_VERSION }}
