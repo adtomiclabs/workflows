@@ -45,16 +45,6 @@ jobs:
           file: samconfig.toml
           key: prod.deploy.parameters.s3_prefix
           value: ${{ inputs.RELEASE_VERSION }}
-          
-      - name: Create Release Branch
-        run: |
-          git checkout -b ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
-
-      - name: Push version change ${{ inputs.RELEASE_VERSION }}
-        run: |
-          git add .
-          git commit -m "Set version ${{ inputs.RELEASE_VERSION }}"
-          git push -u origin ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v8
@@ -63,8 +53,10 @@ jobs:
         with:
           branch: ${{ inputs.RELEASE_TYPE }}/${{ inputs.RELEASE_VERSION }}
           base: main
+          commit-message: "SCM - set version ${{ inputs.RELEASE_VERSION }}"
           title: Release version ${{ inputs.RELEASE_VERSION }}
           reviewers: ${{ github.actor }}
+          sign-commits: true
           body: |
             This PR was created in response to a manual trigger of the release workflow here:
 
